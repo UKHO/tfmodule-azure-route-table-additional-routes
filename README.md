@@ -1,4 +1,4 @@
-# Terraform Module: for Azure vnet with nsg
+# Terraform Module: for Azure route table with multiple routes
 
 ## Required Resources
 
