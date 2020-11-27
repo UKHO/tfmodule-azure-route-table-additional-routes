@@ -71,8 +71,8 @@ data "azurerm_route_table" "main" {
 resource "azurerm_route" "main" {
   provider            = azurerm.spoke
   name                = var.spokeroute[count.index]
-  resource_group_name = data.azurerm_resource_group.main.name
-  route_table_name    = data.azurerm_route_table.main.name
+  resource_group_name = azurerm_resource_group.main.name
+  route_table_name    = azurerm_route_table.main.name
   address_prefix      = var.spokeprefix[count.index]
   next_hop_type       = var.hop[count.index]
   count               = length(var.spokeroute)
