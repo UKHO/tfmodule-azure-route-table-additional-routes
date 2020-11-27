@@ -22,6 +22,10 @@ provider "azurerm" {
   #subscription_id = local.hub_subscription_id
 }
 
+locals {
+  vnet_name = "${var.id}-vnet"
+}
+
 data "azurerm_resource_group" "main" {
   provider = azurerm.spoke
   name     = var.spokerg
