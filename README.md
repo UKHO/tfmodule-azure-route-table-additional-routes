@@ -1,7 +1,7 @@
 # Route Tables Additional Routes
 
 
-# Usage Vars
+## Usage Vars
 
 variable "spokerg" {
  #description = "name of spoke resource group"
@@ -37,7 +37,7 @@ variable "hubprefix" {
   #description = "hub ip route array" [""]  
 }
 
-# Module
+## Module
 
 provider "azurerm" {
 
