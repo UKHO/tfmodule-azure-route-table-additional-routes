@@ -72,33 +72,3 @@ resource "azurerm_route" "main1" {
   next_hop_type       = var.hop[count.index]
   count               = length(var.hubroute)
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
