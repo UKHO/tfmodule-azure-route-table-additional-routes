@@ -1,25 +1,11 @@
-#locals {
-#  subscription_id     = "5739fe4c-408e-45ba-941e-301ae4525146"
-#  hub_subscription_id = "282900b8-5415-4137-afcc-fd13fe9a64a7"
-#}
-
-#provider "azurerm" {
-#  features {}
-#  version = "=2.20.0"
-#}
-
 provider "azurerm" {
-  #version = "=2.20.0"
-  #features {}
-  alias = "spoke"
-  #subscription_id = local.subscription_id  
+
+  alias = "spoke"  
 }
 
 provider "azurerm" {
-  #version = "=2.20.0"
-  #features {}
-  alias = "hub"
-  #subscription_id = local.hub_subscription_id
+
+  alias = "hub"  
 }
 
 locals {
@@ -28,8 +14,7 @@ locals {
 
 data "azurerm_resource_group" "main" {
   provider = azurerm.spoke
-  name     = var.spokerg
-  #location = "uksouth"
+  name     = var.spokerg 
 }
 
 resource "azurerm_route_table" "main" {
