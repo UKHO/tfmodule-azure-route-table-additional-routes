@@ -8,82 +8,120 @@
 ## Usage
 
 ```terraform
-variable "address" {
-  default = "10.0.1.0/24"
-}
+# Route Tables Additional Routes
 
+## Creating multiple routes under the spoke and hub tables
+
+## Usage Vars
+
+variable "spokerg" {
+ #description = "name of spoke resource group"
+}
+variable "hubrg" {
+ #description = "name of hub resource group"
+}
+variable "hubrt" {
+  #description = "hub route table name" 
+}
+variable "id" {
+  #description = "environment you're deploying too"
+}
+variable "routetable" {
+  #description = "spoke route table"
+}
+variable "spokeroute" {
+  #description = "Spoke routetable route array [""]
+}
+variable "hubroute" {
+  #description = "Hub routetable routes" [""]
+}
+variable "hop" {
+  #description = "The type of hop you require in a array" ["VirtualNetworkGateway"]
+}
 variable "subnets" {
-  default = [
-    {
-      name = "service-subnet"
-      number = 0
-    }
-  ]
+ #description = "array contains names of subnets, the subnet array used on the tfmodule-azure-vnet-with-nsg fits this expected pattern" 
+}
+variable "spokeprefix" {
+  #description = "Spoke ip route array" [""]
+}
+variable "hubprefix" {
+  #description = "hub ip route array" [""]  
 }
 
-variable "endpoints" {
-  default = ["Microsoft.Sql", "Microsoft.Storage", "Microsoft.KeyVault"]
-}
+## Module
 
-variable "tags" {
-  type = map
-  default = {
-    ENVIRONMENT      = "Dev"
-  }
-}
+provider "azurerm" {
 
-variable "subscriptionId {
-default="12312312312-312-312-3-12"
+  alias = "spoke"  
 }
 
 provider "azurerm" {
-  version = "=2.20.0"
-  features {}
-  alias           = "alias"
-  subscription_id = var.SubscriptionId
+
+  alias = "hub"  
 }
 
-
-resource "azurerm_resource_group" "gg" {
-  name = "existing-rg"
-  location = "UKSouth"
-  tags = var.tags
+locals {
+  vnet_name = "${var.id}-vnet"
 }
 
-module "setup" {
-  source                        = "github.com/ukho/tfmodule-azure-vnet-with-nsg?ref=0.4.0"
-  providers = {
-    azurerm.src = azurerm.alias
-  }
-  prefix                        = "Prefix"
-  tags                          = "${var.tags}"
-  resource_group                = azurerm_resource_group.gg
-  address                       = "${var.address}"
-  subnets                       = "${var.subnets}"
-  newbits                       = "4"
-  service_endpoints             = "${var.endpoints}"
+data "azurerm_resource_group" "main" {
+  provider = azurerm.spoke
+  name     = var.spokerg 
 }
-```
 
-if you arent woried about the version you use, latest can be retrieved by removing `?ref=x.y.z` from source path
+resource "azurerm_route_table" "main" {
+  provider                      = azurerm.spoke
+  name                          = var.routetable
+  location                      = data.azurerm_resource_group.main.location
+  resource_group_name           = data.azurerm_resource_group.main.name
+  disable_bgp_route_propagation = false
+  
+  lifecycle { ignore_changes = [tags] }
+}
 
-## Example for subnets
+data "azurerm_subnet" "main" {
+  count                = length(var.subnets)
+  provider             = azurerm.spoke
+  name                 = var.subnets[count.index].name
+  resource_group_name  = var.spokerg
+  virtual_network_name = local.vnet_name
+}
 
-subnets are created using an array expecting a `name` and a `number`, number should increment from 0.
+resource "azurerm_subnet_route_table_association" "main" {
+  count          = length(var.subnets)
+  provider       = azurerm.spoke
+  subnet_id      = data.azurerm_subnet.main[count.index].id
+  route_table_id = azurerm_route_table.main.id
+}
 
-It is also worth noting, the addition of newbits to the base address should not exceed /29. Azure has the habit of absorbing 5 ip addresses per subnet. so the smallest you could go it a range of 8 ips (/29). with a newbits of 4, this would imply a minimum base of /25 is needed.
+data "azurerm_resource_group" "hub" {
+  provider = azurerm.hub
+  name     = var.hubrg
+}
 
-```terraform
-[{
-  name = "subnet1-subnet"
-  number = 0
-},
-{
-  name = "subnet2-subnet"
-  number = 1
-}]
-```
+data "azurerm_route_table" "main" {
+  provider            = azurerm.hub
+  name                = var.hubrt
+  resource_group_name = data.azurerm_resource_group.hub.name
+}
 
-## Service Endpoints
+resource "azurerm_route" "main" {
+  provider            = azurerm.spoke
+  name                = var.spokeroute[count.index]
+  resource_group_name = data.azurerm_resource_group.main.name
+  route_table_name    = azurerm_route_table.main.name
+  address_prefix      = var.spokeprefix[count.index]
+  next_hop_type       = var.hop[count.index]
+  count               = length(var.spokeroute)
+}
 
-An example of `service_endpoints` is ["Microsoft.Sql", "Microsoft.Storage", "Microsoft.KeyVault"]
+resource "azurerm_route" "main1" {
+  provider            = azurerm.hub
+  name                = var.hubroute[count.index]
+  resource_group_name = data.azurerm_resource_group.hub.name
+  route_table_name    = data.azurerm_route_table.main.name
+  address_prefix      = var.hubprefix[count.index]
+  next_hop_type       = var.hop[count.index]
+  count               = length(var.hubroute)
+}
+
