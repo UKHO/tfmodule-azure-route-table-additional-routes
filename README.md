@@ -1,4 +1,4 @@
-# Terraform Module: for Azure route table with multiple routes
+# Terraform Module: for Azure Private endpoint
 
 ## Required Resources
 
@@ -8,7 +8,7 @@
 ## Usage
 
 ```terraform
-# Route Tables Additional Routes
+
 
 ## Creating multiple routes under the spoke and hub tables
 
