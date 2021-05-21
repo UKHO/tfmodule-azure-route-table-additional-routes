@@ -10,7 +10,7 @@
 ```terraform
 
 
-## Creating multiple routes under the spoke and hub tables
+## Creating private endpoints
 
 ## Usage Vars
 
