@@ -1,3 +1,13 @@
+# Terraform Module: for Azure route table with multiple routes
+
+## Required Resources
+
+- `Resource Group` exists or is created external to the module.
+- `Provider` must be created external to the module.
+
+## Usage
+
+```terraform
 # Route Tables Additional Routes
 
 ## Creating multiple routes under the spoke and hub tables
