@@ -1,82 +1,60 @@
-# Terraform Module: for Azure Private endpoint
+# Route Tables Additional Routes
 
-## Required Resources
-
-- `Resource Group` exists or is created external to the module.
-- `Provider` must be created external to the module.
-
-## Usage
-
-```terraform
-
-
-## Creating private endpoints
+## Creating multiple routes under the spoke and hub tables
 
 ## Usage Vars
 
-variable "dns_zone" {
-    description = "alias to create private dns zone - be aware this is dependant on the endpoint"
-    default = "privatelink.azurewebsites.net"
+variable "spokerg" {
+ #description = "name of spoke resource group"
 }
-
-variable "vnet_link" {
-    description = "alias of the virtual network link"
-    default = ""  
+variable "hubrg" {
+ #description = "name of hub resource group"
 }
-
-variable "location" {
-    default = "uksouth"
+variable "hubrt" {
+  #description = "hub route table name" 
 }
-
-variable "network_type" {
-  description = "type of connection"
-  default = "network"
+variable "id" {
+  #description = "environment you're deploying too"
 }
-
-variable "private_connection" {
-    description = "endpoint resource id"	 
-    default = "/subscriptions/SUBID/resourceGroups/RGNAME/providers/Microsoft.Web/sites/APP_SERVICE_NAME" 
+variable "routetable" {
+  #description = "spoke route table"
 }
-
-variable "zone_group" {
-    description = "private dns zone group"
-    default = ""   
+variable "spokeroute" {
+  #description = "Spoke routetable route array [""]
 }
-
-variable "pe_identity" {
-    description = "identity that will create all the private endpoint resources required"
-    default = ""
+variable "hubroute" {
+  #description = "Hub routetable routes" [""]
 }
-
-variable "pe_environment" {
-    description = "environment for private endpoint"
-    default = "dev | prd | qa"
+variable "hop" {
+  #description = "The type of hop you require in a array" ["VirtualNetworkGateway"]
 }
-
-variable "pe_vnet_rg" {
-    description = "this is the rg for the spoke vnet"
-    default = ""
+variable "subnets" {
+ #description = "array contains names of subnets, the subnet array used on the tfmodule-azure-vnet-with-nsg fits this expected pattern" 
 }
-
-variable "pe_vnet_name" {
-    description = "vnet name for the private endpoint"
-    default = ""
+variable "spokeprefix" {
+  #description = "Spoke ip route array" [""]
 }
-
-variable "pe_subnet_name" {
-    description = "subname that the private endpoint will associate"
-    default = ""
+variable "hubprefix" {
+  #description = "hub ip route array" [""]  
 }
 
 ## Module
 
-module "setup" {
-  source                        = "github.com/ukho/tfmodule-azure-private-endpoint?ref=0.1.1"
-  providers = {
-    azurerm.src = azurerm.alias
-  }
-  pr                        = "${var.
-
+module "create" {
+    source                    = "github.com/UKHO/route-table-additional-routes"
+    providers = {
+        azurerm.hub   = azurerm.hub
+        azurerm.spoke = azurerm.test
+    }    
+    spokerg                 =  var.spokerg
+    hubrg                   =  var.hubrg
+    hubrt                   =  var.hubrt
+    id                      =  var.id
+    routetable              =  var.routetable
+    spokeroute              =  var.spokeroute
+    hubroute                =  var.hubroute
+    hop                     =  var.hop
+    subnets                 =  var.SUBNETS
+    hubprefix               =  var.hubprefix
+    spokeprefix             =  var.spokeprefix
 }
-
-
